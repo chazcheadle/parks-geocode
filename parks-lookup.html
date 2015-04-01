@@ -129,6 +129,7 @@ parks = [
 ];
 
 var map;
+var infowindow;
 
 function lookupName() {
   if (document.getElementById("getCoords").value) {
@@ -152,7 +153,8 @@ function lookupName() {
         center: lookupCoords,
         zoom: 15
     });
-    
+
+    infowindow = new google.maps.InfoWindow();
     var service = new google.maps.places.PlacesService(map);
     service.nearbySearch(request, callback);
     // Google's free Maps API + Places Library limits requests
@@ -169,12 +171,26 @@ function callback(results, status) {
       for (var i = 0; i < results.length; i++) {
         result = results[i].geometry.location.k + ', ' + results[i].geometry.location.D + ', ' + results[i].name + "</br>";
         $('#list').append(result);
+        createMarker(results[i]);
       }
     }
   }
   else {
     console.log(google.maps.places.PlacesServiceStatus);
   }
+}
+
+function createMarker(place) {
+  var placeLoc = place.geometry.location;
+  var marker = new google.maps.Marker({
+      map: map,
+      position: place.geometry.location
+  });
+
+  google.maps.event.addListener(marker, 'click', function() {
+        infowindow.setContent(place.name);
+        infowindow.open(map, this);
+  });
 }
 
 function sleep(milliseconds) {
