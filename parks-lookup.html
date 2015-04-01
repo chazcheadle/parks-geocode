@@ -9,6 +9,18 @@
 html {
   font-family: 'arial';
 }
+#results-container {
+  width: 50%;
+  float: left;
+}
+#map-container {
+  width: 50%;
+  float: left;
+}
+#map-canvas {
+  height: 300px;
+  width: 300px;
+}
 </style>
 <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places"></script>
 <script>
@@ -116,6 +128,8 @@ parks = [
     "42.67321081150,-73.79099707830"
 ];
 
+var map;
+
 function lookupName() {
   if (document.getElementById("getCoords").value) {
     parks = [];
@@ -130,13 +144,20 @@ function lookupName() {
 
     var request = {
       location: lookupCoords,
-                radius: 500,
+                radius: 1000,
                 types: ['park']
     };
-
-    var service = new google.maps.places.PlacesService($('#temp').get(0));
+    // This is used for visual confirmation.
+    map = new google.maps.Map(document.getElementById('map-canvas'), {
+        center: lookupCoords,
+        zoom: 15
+    });
+    
+    var service = new google.maps.places.PlacesService(map);
     service.nearbySearch(request, callback);
-    sleep(101);
+    // Google's free Maps API + Places Library limits requests
+    // to 1/sec/user && 1000/24hrs
+    sleep(1001);
   }
 }
 
@@ -146,7 +167,7 @@ function callback(results, status) {
     if (results.length) {
       console.log(results);
       for (var i = 0; i < results.length; i++) {
-        result = results[i].geometry.location.D + ', ' + results[i].geometry.location.k + ', ' + results[i].name + "</br>";
+        result = results[i].geometry.location.k + ', ' + results[i].geometry.location.D + ', ' + results[i].name + "</br>";
         $('#list').append(result);
       }
     }
@@ -169,10 +190,20 @@ function sleep(milliseconds) {
 </head>
 <body>
 <div id="controls">
+  <div>
+    <p>Enter a lat/long and click the button.</br>
+    Results show will be the matches found within</br>
+    a 500 meter radius with the Google Maps stored</br>
+    geometry for those places.</p>
+  </div>
   <input type="text" id="getCoords">
   <button id="getName" onClick="lookupName();">Lookup Name</button>
-  <div id="temp"></div>
 </div>
-<div id="list"></div>
+<div id="results-container">
+  <div id="list"></div>
+</div>
+<div id="map-container">
+  <div id="map-canvas"></div>
+</div>
 </body>
 </html>
