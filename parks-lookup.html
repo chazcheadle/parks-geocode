@@ -10,16 +10,20 @@ html {
   font-family: 'arial';
 }
 #results-container {
-  width: 50%;
+  width: 34%;
   float: left;
 }
+#list {
+  margin: 20px;
+}
 #map-container {
-  width: 50%;
+  width: 66%;
   float: left;
 }
 #map-canvas {
-  height: 300px;
-  width: 300px;
+  height: 450px;
+  width: 600px;
+  margin: 20px;
 }
 </style>
 <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places"></script>
@@ -145,21 +149,42 @@ function lookupName() {
 
     var request = {
       location: lookupCoords,
-                radius: 1000,
+                radius: 5000,
                 types: ['park']
     };
     // This is used for visual confirmation.
     map = new google.maps.Map(document.getElementById('map-canvas'), {
         center: lookupCoords,
-        zoom: 15
+        zoom: 12
     });
 
     infowindow = new google.maps.InfoWindow();
     var service = new google.maps.places.PlacesService(map);
     service.nearbySearch(request, callback);
+
+    var marker = new google.maps.Marker({
+      position: lookupCoords,
+      map: map,
+      icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+      title: parks[i]
+    });
+
+    // Add circle overlay and bind to marker
+    var circle = new google.maps.Circle({
+       map: map,
+       radius: 5000,    // 10 miles in metres
+       fillColor: '#AA0000',
+       strokeColor: '#444444',
+       strokeWeight: '1',
+       fillOpacity: '0.1'
+    });
+    circle.bindTo('center', marker, 'position');
+    
     // Google's free Maps API + Places Library limits requests
     // to 1/sec/user && 1000/24hrs
     sleep(1001);
+  
+
   }
 }
 
@@ -169,7 +194,7 @@ function callback(results, status) {
     if (results.length) {
       console.log(results);
       for (var i = 0; i < results.length; i++) {
-        result = results[i].geometry.location.k + ', ' + results[i].geometry.location.D + ', ' + results[i].name + "</br>";
+        result = results[i].geometry.location.lat() + ', ' + results[i].geometry.location.lng() + ', ' + results[i].name + "</br>";
         $('#list').append(result);
         createMarker(results[i]);
       }
@@ -209,7 +234,7 @@ function sleep(milliseconds) {
   <div>
     <p>Enter a lat/long and click the button.</br>
     Results show will be the matches found within</br>
-    a 500 meter radius with the Google Maps stored</br>
+    a 5000 meter radius with the Google Maps stored</br>
     geometry for those places.</p>
   </div>
   <input type="text" id="getCoords">
